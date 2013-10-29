@@ -1,21 +1,22 @@
 #!/bin/bash
 BACKUP_STORAGE="/backups/"
+BACKUP_VERSION="0.1"
 
 if [ "$1" == "" ]
 then
-        echo "Provider a path to a backup descriptor file as your first argument.";
-        exit;
+  echo "Provider a path to a backup descriptor file as your first argument.";
+  exit;
 fi
 
 if [ ! -f $1 ]
 then
-        echo "Backup descriptor does not exist";
+  echo "Backup descriptor does not exist";
 fi
 
 if [ ! -d $BACKUP_DIR ]
 then
-        echo "Backup directory does not exist.";
-        exit;
+  echo "Backup directory does not exist.";
+  exit;
 fi
 
 BACKUP_CONFIG="$1"
@@ -31,5 +32,5 @@ fi
 . $BACKUP_CONFIG
 if [ -f $BACKUP_TMP_SRC ]
 then
-        rm $BACKUP_TMP_SRC
+  rm $BACKUP_TMP_SRC
 fi

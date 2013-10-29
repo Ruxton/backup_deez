@@ -1,0 +1,11 @@
+Package: backup-deez
+Version: 0.01
+Architecture: all
+Maintainer: Greg Tangey <gregs@digitalignition.net>
+Installed-Size: 2
+Depends: bash (>= 4), sed, tar
+Suggests: mysql
+Section: extras
+Priority: optional
+Homepage: https://github.com/ruxton/backup_deeze/
+Description: Backup Deeze is a backup utility/daemon to be run in cron scripts

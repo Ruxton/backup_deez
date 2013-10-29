@@ -1,0 +1,5 @@
+usr/local/bin/backup /usr/local/bin/backup
+usr/local/bin/backup-cleanup /usr/local/bin/backup-cleanup
+usr/local/bin/backup-create /usr/local/bin/backup-create
+usr/local/bin/backupd /usr/local/bin/backup/backupd
+etc/backup-config /etc/backup-config
