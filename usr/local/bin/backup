@@ -1,0 +1,35 @@
+#!/bin/bash
+
+. /etc/backup-config
+
+backupName=$BACKUP_NAME;
+today=`date +%Y-%m-%0e`;
+filename="$backupName-backup-$today";
+
+echo "Backing up $backupName to $filename";
+
+if [ ! -d $BACKUP_STORAGE$backupName/ ]; then
+	mkdir $BACKUP_STORAGE$backupName
+	echo "Backup directory did not exist, created...";
+else
+	echo "Backup directory exists, continuing...";
+fi
+
+if [ -d $BACKUP_STORAGE$backupName/$today/ ]; then
+	echo "Todays backup exists already, removing to update";
+	rm -rf $BACKUP_STORAGE$backupName/$today/
+fi
+mkdir $BACKUP_STORAGE$backupName/$today
+
+cd $BACKUP_STORAGE$backupName/$today
+
+echo "Backing up mySQL DB...";
+mysqldump --user=$MYSQL_USER --password=$MYSQL_PASS --routines $MYSQL_TABLES > $filename.sql
+echo "Compressing backup...";
+tar -czf $filename.sql.tar.gz $filename.sql
+echo "Cleaning up.";
+rm $filename.sql
+
+echo "Backing up files for $backupName";
+tar -czhf $filename.tar.gz $BACKUP_DIR
+echo "done.";

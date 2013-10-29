@@ -1,0 +1,80 @@
+#!/bin/bash
+BACKUP_HOME=$HOME/.backup.d/
+BACKUP_NAME_DEFAULT=template_backup #name of backup
+BACKUP_DIR_DEFAULT=/var/vhosts/tempate_backup #directory backup
+BACKUP_EXPIRY_DEFAULT=5 #days to expire
+BACKUP_STORAGE_DEFAULT=$HOME/backups/ #where to store the backups
+MYSQL_USER_DEFAULT=username #mysql username
+MYSQL_PASS_DEFAULT=password #mysql password
+MYSQL_TABLE_DEFAULT=table_name #mysql database
+DID_MYSQL=false
+
+function read_with_defaults() {
+  local return_var
+  prompt=$1
+  default=$2
+
+  read -e -p "$prompt [$default]: " return_var
+  return_var=${return_var:-$default}
+  eval $3=\$return_var
+}
+
+function user_confirm() {
+  msg=$1
+  local REPLY
+  read -ep "$msg (y/n):" -n 1
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+function build_backup_file() {
+  mkdir -p $BACKUP_HOME
+  echo "BACKUP_NAME=$BACKUP_NAME" > $BACKUP_FILE
+  echo "BACKUP_DIR=$BACKUP_DIR" >> $BACKUP_FILE
+  echo "BACKUP_STORAGE=$BACKUP_STORAGE" >> $BACKUP_FILE
+  echo "BACKUP_EXPIRY=$BACKUP_EXPIRY" >> $BACKUP_FILE
+
+  if $DID_MYSQL; then
+    echo
+    echo "## MYSQL Backup"
+    echo "MYSQL_USER=$MYSQL_USER" >> $BACKUP_FILE
+    echo "MYSQL_PASS=$MYSQL_PASS" >> $BACKUP_FILE
+    echo "MYSQL_TABLE=$MYSQL_TABLE" >> $BACKUP_FILE
+  fi
+
+  echo "Backup descriptor created at $BACKUP_FILE"
+}
+
+read_with_defaults "Enter a name for the backup" $BACKUP_NAME_DEFAULT BACKUP_NAME
+read_with_defaults "Enter a directory to backup" $BACKUP_DIR_DEFAULT BACKUP_DIR
+read_with_defaults "Enter a directory to story the backup" $BACKUP_STORAGE_DEFAULT BACKUP_STORAGE
+read_with_defaults "Enter the number of days before a backup expires" $BACKUP_EXPIRY_DEFAULT BACKUP_EXPIRY
+
+
+if user_confirm "Do you need to backup a MySQL Database"; then
+  DID_MYSQL=true
+  read_with_defaults "Enter the MySQL Username" $MYSQL_USER_DEFAULT MYSQL_USER
+  read_with_defaults "Enter the MySQL Password" $MYSQL_PASS_DEFAULT MYSQL_PASS
+  read_with_defaults "Enter the MySQL Database" $MYSQL_TABLE_DEFAULT MYSQL_TABLE
+fi
+
+BACKUP_NAME=${BACKUP_NAME// /_}
+BACKUP_NAME=`echo $BACKUP_NAME | sed -e s/[^A-Za-z0-9_.]//g`
+BACKUP_FILE=$BACKUP_HOME$BACKUP_NAME.backup
+
+if [[ -f $BACKUP_FILE ]]; then
+  if user_confirm "File already exists, overwrite backup file at $BACKUP_FILE"; then
+    echo "Overwriting $BACKUP_FILE..."
+    build_backup_file
+  else
+    echo "Exiting without writing."
+    exit 1
+  fi
+else
+  echo "Building backup file.."
+  build_backup_file
+fi

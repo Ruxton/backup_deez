@@ -1,0 +1,15 @@
+#!/bin/bash
+. /etc/backup-config
+
+date_format="+%Y%m%d"
+EXPIRED=`date --date="${BACKUP_EXPIRY} days ago" ${date_format}`
+ls -1 $BACKUP_STORAGE$BACKUP_NAME |
+  while read DIR
+  do
+    DIR_DATE=`echo $DIR | sed 's/-//' | sed 's/-//'`
+    if [[ $DIR_DATE -lt $EXPIRED ]]; then
+      cd $BACKUP_STORAGE$BACKUP_NAME
+      rm -rf $DIR
+      cd -
+    fi
+  done

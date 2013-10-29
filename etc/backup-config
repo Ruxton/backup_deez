@@ -1,0 +1,35 @@
+#!/bin/bash
+BACKUP_STORAGE="/backups/"
+
+if [ "$1" == "" ]
+then
+        echo "Provider a path to a backup descriptor file as your first argument.";
+        exit;
+fi
+
+if [ ! -f $1 ]
+then
+        echo "Backup descriptor does not exist";
+fi
+
+if [ ! -d $BACKUP_DIR ]
+then
+        echo "Backup directory does not exist.";
+        exit;
+fi
+
+BACKUP_CONFIG="$1"
+BACKUP_FILE=`basename $1`
+BACKUP_TMP_SRC="/tmp/$BACKUP_FILE"
+if egrep -q -v '^#|^[^ ]*=[^;]*' "$BACKUP_CONFIG"; then
+  echo "Config file is unclean, cleaning it..." >&2
+  # filter the original to a new file
+  egrep '^#|^[^ ]*=[^;&]*'  "$BACKUP_CONFIG" > "$BACKUP_TMP_SRC"
+  BACKUP_CONFIG="$BACKUP_TMP_SRC"
+fi
+
+. $BACKUP_CONFIG
+if [ -f $BACKUP_TMP_SRC ]
+then
+        rm $BACKUP_TMP_SRC
+fi
